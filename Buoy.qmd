@@ -1,0 +1,270 @@
+---
+title: "Buoy"
+format: html
+editor: visual
+---
+
+### Address a question: Has the air temperature gotten higher from 1984 to 2004?
+
+### Define a standardize set of headers
+
+```{r, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(tidyverse)
+dat1984 <- read.table("txt_files/1984.txt", header = TRUE)
+dat1985 <- read.table("txt_files/1985.txt", header = TRUE)
+dat1986 <- read.table("txt_files/1986.txt", header = TRUE)
+dat1987 <- read.table("txt_files/1987.txt", header = TRUE)
+dat1988 <- read.table("txt_files/1988.txt", header = TRUE)
+dat1989 <- read.table("txt_files/1989.txt", header = TRUE)
+dat1990 <- read.table("txt_files/1990.txt", header = TRUE)
+dat1991 <- read.table("txt_files/1991.txt", header = TRUE)
+dat1992 <- read.table("txt_files/1992.txt", header = TRUE)
+dat1993 <- read.table("txt_files/1993.txt", header = TRUE)
+dat1994 <- read.table("txt_files/1994.txt", header = TRUE)
+dat1995 <- read.table("txt_files/1995.txt", header = TRUE)
+dat1996 <- read.table("txt_files/1996.txt", header = TRUE)
+dat1997 <- read.table("txt_files/1997.txt", header = TRUE)
+dat1998 <- read.table("txt_files/1998.txt", header = TRUE)
+
+col1999_2006 <- c("YY","MM","DD","hh","WD","WSPD","GST","WVHT","DPD","APD",
+             "MWD","BAR","ATMP","WTMP","DEWP","VIS")
+
+dat1999 <- read.table("txt_files/1999.txt",
+                      header = TRUE)     # first data row is data, not headers
+colnames(dat1999) <- col1999_2006
+
+col2000_2006 <- c("YY","MM","DD","hh","WD","WSPD","GST","WVHT","DPD","APD",
+             "MWD","BAR","ATMP","WTMP","DEWP","VIS", "TIDE")
+
+dat2000 <- read.table("txt_files/2000.txt",
+                      header = TRUE,
+                      sep = "",
+                      fill = TRUE)
+if (ncol(dat2000) <17){
+  dat2000$V17 <- NA
+}
+names(dat2000) <-col2000_2006
+
+colnames(dat2000) <- col2000_2006
+
+dat2001 <- read.table("txt_files/2001.txt",
+                      header = TRUE)     # first data row is data, not headers
+colnames(dat2001) <- col2000_2006
+
+dat2002 <- read.table("txt_files/2002.txt",
+                      header = TRUE)     # first data row is data, not headers
+colnames(dat2002) <- col2000_2006
+
+dat2003 <- read.table("txt_files/2003.txt",
+                      header = TRUE)     # first data row is data, not headers
+colnames(dat2003) <- col2000_2006
+
+dat2004 <- read.table("txt_files/2004.txt",
+                      header = TRUE)     # first data row is data, not headers
+colnames(dat2004) <- col2000_2006
+
+dat2005 <- read.table("txt_files/2005.txt",
+                      header = TRUE)     # first data row is data, not headers
+colnames(dat2005) <- col2000_2006
+
+dat2006 <- read.table("txt_files/2006.txt",
+                      header = TRUE)     # first data row is data, not headers
+colnames(dat2006) <- col2000_2006
+
+col2007_2024 <- c("YY","MM","DD","hh","mm","WDIR","WSPD","GST","WVHT","DPD","APD",
+             "MWD","PRES","ATMP","WTMP","DEWP","VIS", "TIDE")
+
+dat2007 <- read.table("txt_files/2007.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2007) <- col2007_2024
+
+dat2008 <- read.table("txt_files/2008.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2008) <- col2007_2024
+
+dat2009 <- read.table("txt_files/2009.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2009) <- col2007_2024
+
+dat2010 <- read.table("txt_files/2010.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2010) <- col2007_2024
+
+dat2011 <- read.table("txt_files/2011.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2011) <- col2007_2024
+
+dat2012 <- read.table("txt_files/2012.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2012) <- col2007_2024
+
+dat2013 <- read.table("txt_files/2013.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2013) <- col2007_2024
+
+dat2014 <- read.table("txt_files/2014.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2014) <- col2007_2024
+
+dat2015 <- read.table("txt_files/2015.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2015) <- col2007_2024
+
+dat2016 <- read.table("txt_files/2016.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2016) <- col2007_2024
+
+dat2017 <- read.table("txt_files/2017.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2017) <- col2007_2024
+
+dat2018 <- read.table("txt_files/2018.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2018) <- col2007_2024
+
+dat2019 <- read.table("txt_files/2019.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2019) <- col2007_2024
+
+dat2020 <- read.table("txt_files/2020.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2020) <- col2007_2024
+
+dat2021 <- read.table("txt_files/2021.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2021) <- col2007_2024
+
+dat2022 <- read.table("txt_files/2022.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2022) <- col2007_2024
+
+dat2023 <- read.table("txt_files/2023.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2023) <- col2007_2024
+
+dat2024 <- read.table("txt_files/2024.txt",
+                      header = FALSE,
+                      comment.char = "#")     # first data row is data, not headers
+colnames(dat2024) <- col2007_2024
+```
+
+### Check missing values in ATMP and remove them. Then calculate the average ATMP of the first 20 years (1984 - 2024).
+
+```{r, warning=FALSE, message=FALSE}
+df84 <- dat1984 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_84 <- sum(df84$ATMP) / length(df84$ATMP)
+
+df85 <- dat1985 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_85 <- sum(df85$ATMP) / length(df85$ATMP)
+
+df86 <- dat1986 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_86 <- sum(df86$ATMP) / length(df86$ATMP)
+
+df87 <- dat1987 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_87 <- sum(df87$ATMP) / length(df87$ATMP)
+
+df88 <- dat1988 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_88 <- sum(df88$ATMP) / length(df88$ATMP)
+
+df89 <- dat1989 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_89 <- sum(df89$ATMP) / length(df89$ATMP)
+
+df90 <- dat1990 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_90 <- sum(df90$ATMP) / length(df90$ATMP)
+
+df91 <- dat1991 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_91 <- sum(df91$ATMP) / length(df91$ATMP)
+
+df92 <- dat1992 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_92 <- sum(df92$ATMP) / length(df92$ATMP)
+
+df93 <- dat1993 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_93 <- sum(df93$ATMP) / length(df93$ATMP)
+
+df94 <- dat1994 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_94 <- sum(df94$ATMP) / length(df94$ATMP)
+
+df95 <- dat1995 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_95 <- sum(df95$ATMP) / length(df95$ATMP)
+
+df96 <- dat1996 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_96 <- sum(df96$ATMP) / length(df96$ATMP)
+
+df97 <- dat1997 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_97 <- sum(df97$ATMP) / length(df97$ATMP)
+
+df98 <- dat1998 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_98 <- sum(df98$ATMP) / length(df98$ATMP)
+
+df99 <- dat1999 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_99 <- sum(df99$ATMP) / length(df99$ATMP)
+
+df2000 <- dat2000 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_2000 <- sum(df2000$ATMP) / length(df2000$ATMP)
+
+df2001 <- dat2001 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_2001 <- sum(df2001$ATMP) / length(df2001$ATMP)
+
+df2002 <- dat2002 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_2002 <- sum(df2002$ATMP) / length(df2002$ATMP)
+
+df2003 <- dat2003 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_2003 <- sum(df2003$ATMP) / length(df2003$ATMP)
+
+df2004 <- dat2004 |> filter(!(ATMP %in% c(99, 999, 99.0, 999.0)))
+ave_2004 <- sum(df2004$ATMP) / length(df2004$ATMP)
+
+```
+
+### Plot as bar chart
+
+```{r, warning=FALSE, message=FALSE}
+#Put results in a data frame
+years <- 1984:2004
+averages <- c(ave_84, ave_85, ave_86, ave_87, ave_88, 
+              ave_89, ave_90, ave_91, ave_92, ave_93, 
+              ave_94, ave_95, ave_96, ave_97, ave_98, 
+              ave_99, ave_2000, ave_2001, ave_2002, 
+              ave_2003, ave_2004)
+
+df <- data.frame(Year = years, Avg_ATMP = averages)
+
+#Plot(frequency distribution)
+ggplot(df, aes(x = factor(Year), y = Avg_ATMP)) +
+  geom_col(fill = "skyblue") +
+  labs(x = "Year", y = "Average ATMP", 
+       title = "Average ATMP per Year (1984–2004)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### Plot as a line chart
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(df, aes(x = Year, y = Avg_ATMP)) +
+  geom_line(color = "blue") +
+  geom_point(color = "red") +
+  labs(x = "Year", y = "Average ATMP", 
+       title = "Average ATMP per Year (1984–2004)") +
+  theme_minimal()
+```
+
+### Findings: The air temperature did not get higher from 1984 to 2024 but in fact, getting lower. Especially, in 1997, the air temperature was lowest (\~6 Celsius). This happened because 1997 was an El Niño year, one of the strongest of the 20th century. El Niño tends to warm the tropical Pacific but can create colder-than-normal winters in some mid-latitude regions (including the North Atlantic where many NOAA/NDBC buoys are located).
