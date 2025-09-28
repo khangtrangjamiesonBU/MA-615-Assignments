@@ -1,0 +1,298 @@
+---
+title: "Assignment-D"
+format: html
+editor: visual
+---
+
+## Exercises from R4DS
+
+### Filter()
+
+```{r, warning=FALSE, message=FALSE}
+library(nycflights13)
+library(tidyverse)
+library(dplyr)
+```
+
+```{r, warning=FALSE, message=FALSE}
+flights
+```
+
+```{r, warning=FALSE, message=FALSE}
+#filter() and arrange () opearates on ROWs
+#filter() changes rows are present without changing their orders, columns are left unchanged.
+#arrange() changes order but does not change rows are present, columns are left unchanged
+#distinct() finds rows with unique values, optionally can modify columns
+
+
+#Find all flights that departed more than 120 minutes (two hours) late
+flights |> filter(dep_delay > 120)
+new_set <- flights |> filter (month == 1 | month == 2)
+```
+
+### Arrange ()
+
+```{r, warning=FALSE, message=FALSE}
+flights |> arrange(year, month, day, dep_time)
+```
+
+#### use desc() inside arrange()
+
+```{r, warning=FALSE, message=FALSE}
+flights |> arrange(desc(dep_delay))
+```
+
+### Distinct()
+
+```{r, warning=FALSE, message=FALSE}
+#distinct() finds all the unique rows in a dataset
+flights |> distinct()
+#Find all unique origins and destination pairs
+flights |> distinct(origin, dest)
+#keep the other columns while filtering for unique rows, use .keep_all = TRUE
+flights |> distinct(origin, dest, .keep_all = TRUE)
+```
+
+#### Find the number of occurrence, use count(), with sort = TRUE we can arrange occurrences in descending order.
+
+```{r, warning=FALSE, message=FALSE}
+flights |> count(origin, dest, sort = TRUE)
+```
+
+# Section 3.2.5
+
+## Question 1. In a single pipeline for each condition, find all flights that meet the condition:
+
+### Had an arrival delay of two or more hours
+
+```{r, warning=FALSE, message=FALSE}
+late_arr_delay <- flights |> filter(arr_delay > 120) 
+head(late_arr_delay)
+```
+
+### Flew to Houston (`IAH` or `HOU`)
+
+```{r, warning=FALSE, message=FALSE}
+hous <- flights |> filter(dest == 'IAH' | dest == 'HOU')
+head(hous)
+```
+
+### Were operated by United, American, or Delta
+
+```{r, warning=FALSE, message=FALSE}
+brands <- flights |> filter (carrier == 'UA' | carrier == 'AA' | carrier == 'DL')
+head(brands)
+tail(brands)
+```
+
+### Departed in summer (July, August, and September)
+
+```{r, warning=FALSE, message=FALSE}
+summer_months <- flights |> filter(month %in% c(7, 8, 9))
+head (summer_months)
+tail(summer_months)
+```
+
+### Arrived more than two hours late but didn’t leave late
+
+```{r, warning=FALSE, message=FALSE}
+comb <- flights |> filter(arr_delay >120 & dep_delay == 0)
+head(comb)
+tail(comb)
+```
+
+### Were delayed by at least an hour, but made up over 30 minutes in flight
+
+```{r, warning=FALSE, message=FALSE}
+de_30 <- flights |> filter(dep_delay >= 60 & minute > 30)
+head(de_30)
+tail(de_30)
+```
+
+## Question 4. Was there a flight on every day of 2013?
+
+```{r, warning=FALSE, message=FALSE}
+flights %>%
+  filter(year == 2013) %>%
+  count(month, day) %>%
+  summarize(all_days_have_flights = all(n > 0))
+```
+
+### Conclusion: Since the answer is TRUE, there was a flight on every day of 2013.
+
+## Question 5. Which flights traveled the farthest distance? Which traveled the least distance?
+
+```{r, warning=FALSE, message=FALSE}
+far <- flights |> filter(distance == max(distance))
+print(far)
+leas <- flights |> filter(distance == min(distance))
+print(leas)
+```
+
+### Conclusion: The farthest distance is flight from JFK to HNL. The least distance is flight from EWR to LGA.
+
+# Section 3.3.5
+
+## Question 1. Compare `dep_time`, `sched_dep_time`, and `dep_delay`. How would you expect those three numbers to be related?
+
+### I expect dep_delay = dep_time - sched_dep_time
+
+```{r, warning=FALSE, message=FALSE}
+flights |> mutate(cal_dep_delay = dep_time - sched_dep_time, .after = dep_delay)
+```
+
+### Conclusion: I created a new column called "cal_dep_deplay" and put it after column "dep_delay" so we can compare them easily. It seems like two columns have the same values except where sched_dep_time \> dep\_ time, the "cal_dep_deplay" will add (-40) to the cal_dep_deplay.
+
+## Question 4. What does the any_of() function do? Why might it be helpful in conjunction with this vector?
+
+```{r, warning=FALSE, message=FALSE}
+variables <- c("year", "month", "day", "dep_delay", "arr_delay")
+flights %>% select(any_of(variables))
+```
+
+# Section 3.5.7
+
+## Question 1. Which carrier has the worst average delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not?
+
+```{r, warning=FALSE, message=FALSE}
+flights |>
+  summarize(
+    avg_delay = mean(dep_delay, na.rm = TRUE),
+    flights = n(),
+    .by = carrier
+  ) |> arrange(desc(avg_delay))
+
+flights |>
+  summarize(
+    avg_arr_delay = mean(arr_delay, na.rm = TRUE),
+    flights = n(),
+    .by = carrier
+  ) |> arrange(desc(avg_arr_delay))
+```
+
+### Conclusion: F9 has the worst average delays
+
+```{r, warning=FALSE, message=FALSE}
+flights |> 
+  group_by(carrier, dest) |> 
+  summarize(
+    avg_arr_delay = mean(arr_delay, na.rm = TRUE),
+    flights = n(),
+    .groups = "drop"
+  ) |> 
+  arrange(desc(avg_arr_delay))
+```
+
+### Based on the data, I don't think I can disentangle the effects of bad airports vs. bad carriers.
+
+## Question 2. Find the flights that are most delayed upon departure from each destination.
+
+```{r, warning=FALSE, message=FALSE}
+most_dep_by_dest <- flights |>
+  group_by(dest) |>
+  slice_max(dep_delay, n = 1, with_ties = TRUE) |>
+  ungroup()
+
+most_dep_by_dest
+```
+
+## Question 4. What happens if you supply a negative `n` to slice_min() and friends?
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+df1 <- tibble(x = 1:10)
+
+slice_min(df1, x, n = 3)
+slice_min(df1, x, n = -3)
+slice_max(df1, x, n = 3)
+slice_max(df1, x, n = -3)
+slice_head(df1, n = -3)
+slice_tail(df1, n = -3)
+slice_sample(df1, n = -3)
+```
+
+### If supply a negative n to slice_min(), number of rows returned = group size - \|n\| and these rows have the smallest values. Similar to slice_min(), if supply a negative n to slice_max(), number of rows returned = group size - \|n\| and these rows have the largest values. If supply a negative n to slice_head() or slice_tail(), 3 rows of top or bottom will be removed. Supplying a negative value for n to slice_sample() in R subtracts the absolute value of n from the group size and returns that many randomly sampled rows from each group. For example, if the group contains 10 rows and n = -3, slice_sample() will randomly select 10−3=7 rows.
+
+## Question 6. Suppose we have the following tiny data frame
+
+```{r, warning=FALSE, message=FALSE}
+df <- tibble(
+  x = 1:5,
+  y = c("a", "b", "a", "a", "b"),
+  z = c("K", "K", "L", "L", "K")
+)
+```
+
+### a) Write down what you think the output will look like, then check if you were correct, and describe what group_by() does.
+
+### I think group_by(y) will check the tibble's rows to see if other rows have the elements of y.
+
+```{r, warning=FALSE, message=FALSE}
+df |>
+  group_by(y)
+```
+
+### Check: I was not correct. group_by(y) does not "check if other rows have the same element," instead it groups the tibble into 2 groups of y: "a" and "b".
+
+### b) Write down what you think the output will look like, then check if you were correct, and describe what arrange () does. Also, comment on how it’s different from the group_by() in part (a).
+
+### I think the arrange(y) will arrange all 'As" first then 'Bs'. It differs from group_by() because group_by() just let's us know there are 2 groups within y but not in order.
+
+```{r, warning=FALSE, message=FALSE}
+df |>
+  arrange(y)
+```
+
+### Check: Yes, I was correct!
+
+### c) Write down what you think the output will look like, then check if you were correct, and describe what the pipeline does.
+
+### I think the output will be the average of x column.
+
+```{r, warning=FALSE, message=FALSE}
+df |>
+  group_by(y) |>
+  summarize(mean_x = mean(x))
+```
+
+### Check: I was not quite right. The output is the average of each group within x column and the groups are arranged based on the order of y column.
+
+### d) Write down what you think the output will look like, then check if you were correct, and describe what the pipeline does. Then, comment on what the message says.
+
+### I think the output will group y and z into subgroups of same values. For example y has two groups a and b, z has two groups K and L. The pipeline then calculate the average of each group within x column and the groups are arranged based on the order of y and z columns.
+
+```{r, warning=FALSE, message=FALSE}
+df |>
+  group_by(y, z) |>
+  summarize(mean_x = mean(x))
+```
+
+### Check: I was wrong. The output tibble shows the unique combinations of y and z found in the data. For each group, it calculates the average of x for all rows in that group. The message "summarize() has grouped output by 'y'. We can override using the .groups argument." means that after summarizing, the output preserves the grouping by y, dropping the z grouping unless we specify otherwise.
+
+### e) Write down what you think the output will look like, then check if you were correct, and describe what the pipeline does. How is the output different from the one in part (d)?
+
+### I think the output will be the same as (d) but behind the scene it drops z.
+
+```{r, warning=FALSE, message=FALSE}
+df |>
+  group_by(y, z) |>
+  summarize(mean_x = mean(x), .groups = "drop")
+```
+
+### Check: I was partially right. The output was the same as (d) but instead of dropping z, .groups = "drop" remove all grouping.
+
+### f) Write down what you think the outputs will look like, then check if you were correct, and describe what each pipeline does. How are the outputs of the two pipelines different?
+
+### I think that the first chunk of code will generate three columns with the same output as (d) but the second chunk will create another column called "mean_x" represented all the means of x based on groups of unique combination of y and z.
+
+```{r, warning=FALSE, message=FALSE}
+df |>
+  group_by(y, z) |>
+  summarize(mean_x = mean(x))
+
+df |>
+  group_by(y, z) |>
+  mutate(mean_x = mean(x))
+```
+
+### Check: I was correct!
